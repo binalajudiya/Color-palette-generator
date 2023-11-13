@@ -243,7 +243,7 @@ body {
 
 .dark-mode {
   background-color: #333;
-  color: #fff;
+  color:#fff;
 }
 
 /* Header styles */
@@ -253,9 +253,13 @@ body {
   margin-bottom: 20px;
 }
 
+.dark-mode, .dark-mode h1 {
+  background-color: #333;
+  color: #fff;
+}
+
 h1 {
   text-align: center;
-  color: #333;
   margin-bottom: 30px;
 }
 
@@ -312,7 +316,6 @@ button:hover {
 
 .mode-toggle label {
   margin-right: 10px;
-  color: #555;
 }
 
 /* Pattern options, palette size, harmony info styles */
@@ -320,6 +323,10 @@ button:hover {
 .palette-size,
 .harmony-info {
   margin-bottom: 20px;
+}
+
+.dark-mode .harmony-info {
+  color: #000;
 }
 
 /* Buttons container styles */
