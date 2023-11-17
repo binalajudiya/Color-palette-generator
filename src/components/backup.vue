@@ -5,38 +5,38 @@
     <div class="options">
       <div class="option">
         <label for="numberOfColors">Number of Colors:</label>
-        <input v-model="state.numberOfColors" type="number" min="1" id="numberOfColors" />
+        <input v-model="numberOfColors" type="number" min="1" id="numberOfColors" />
       </div>
 
       <div class="option">
         <label for="saturation">Saturation:</label>
-        <input v-model="state.saturation" type="range" min="0" max="100" id="saturation" />
+        <input v-model="saturation" type="range" min="0" max="100" id="saturation" />
       </div>
 
       <div class="option">
         <label for="colorRange">Color Range:</label>
-        <input v-model="state.colorRange" type="text" id="colorRange" />
+        <input v-model="colorRange" type="text" id="colorRange" />
       </div>
 
       <div class="option">
         <label>Color Constraint:</label>
         <label>
-          <input type="radio" v-model="state.colorConstraint" value="warm" /> Warm
+          <input type="radio" v-model="colorConstraint" value="warm" /> Warm
         </label>
         <label>
-          <input type="radio" v-model="state.colorConstraint" value="cool" /> Cool
+          <input type="radio" v-model="colorConstraint" value="cool" /> Cool
         </label>
       </div>
     </div>
 
     <div class="mode-toggle">
       <label>Dark Mode</label>
-      <input v-model="state.darkMode" type="checkbox" />
+      <input type="checkbox" v-model="darkMode" />
     </div>
 
     <div class="pattern-options">
       <label>Select Color Pattern:</label>
-      <select v-model="state.selectedPattern" @change="updateHarmonyInformation">
+      <select v-model="selectedPattern" @change="updateHarmonyInformation">
         <option value="random">Random</option>
         <option value="complementary">Complementary</option>
         <option value="analogous">Analogous</option>
@@ -44,13 +44,13 @@
       </select>
     </div>
 
-    <div class="harmony-info" v-if="state.harmonyInformation">
-      <p><strong>Color Harmony:</strong> {{ state.harmonyInformation }}</p>
+    <div class="harmony-info" v-if="harmonyInformation">
+      <p><strong>Color Harmony:</strong> {{ harmonyInformation }}</p>
     </div>
 
     <div class="palette-size">
       <label for="paletteSize">Palette Size:</label>
-      <input v-model="state.paletteSize" type="number" min="1" id="paletteSize" @change="generateColorPalette" />
+      <input v-model="paletteSize" type="number" min="1" id="paletteSize" @change="generateColorPalette" />
     </div>
 
     <div class="buttons">
@@ -61,7 +61,7 @@
     </div>
 
     <div class="color-palette" ref="colorPaletteElement">
-      <div v-for="(color, index) in state.colorPalette" :key="index" :style="{ backgroundColor: color }" class="color-box">
+      <div v-for="(color, index) in colorPalette" :key="index" :style="{ backgroundColor: color }" class="color-box">
       </div>
     </div>
 
@@ -70,15 +70,15 @@
     </div>
   </div>
 </template>
-
+  
 <script>
-import { ref, reactive, watchEffect } from 'vue';
 import chroma from 'chroma-js';
 import domtoimage from 'dom-to-image';
 
+
 export default {
-  setup() {
-    const state = reactive({
+  data() {
+    return {
       colorPalette: [],
       numberOfColors: 5,
       colorConstraint: null,
@@ -88,102 +88,95 @@ export default {
       selectedPattern: 'random',
       harmonyInformation: null,
       paletteSize: 5,
-    });
-
-    const colorPaletteElement = ref(null);
-
-    const containerClass = ref({
-      'color-palette-generator': true,
-      'dark-mode': state.darkMode,
-    });
-
-    const updateHarmonyInformation = () => {
-      switch (state.selectedPattern) {
+    };
+  },
+  computed: {
+    containerClass() {
+      return {
+        'color-palette-generator': true,
+        'dark-mode': this.darkMode,
+      };
+    },
+  },
+  methods: {
+    updateHarmonyInformation() {
+      switch (this.selectedPattern) {
         case 'complementary':
-          state.harmonyInformation = 'Complementary';
+          this.harmonyInformation = 'Complementary';
           break;
         case 'analogous':
-          state.harmonyInformation = 'Analogous';
+          this.harmonyInformation = 'Analogous';
           break;
         case 'triadic':
-          state.harmonyInformation = 'Triadic';
+          this.harmonyInformation = 'Triadic';
           break;
         default:
-          state.harmonyInformation = null;
+          this.harmonyInformation = null;
       }
-    };
-
-    const generateRandomColor = () => {
+    },
+    generateRandomColor() {
       return '#' + Math.floor(Math.random() * 16777215).toString(16);
-    };
-
-    const generateColorPalette = () => {
-      switch (state.selectedPattern) {
+    },
+    generateColorPalette() {
+      switch (this.selectedPattern) {
         case 'random':
-          state.colorPalette = Array.from({ length: state.numberOfColors }, generateRandomColor);
+          this.colorPalette = Array.from({ length: this.numberOfColors }, this.generateRandomColor);
           break;
         case 'complementary':
-          state.colorPalette = generateComplementaryPalette();
+          this.colorPalette = this.generateComplementaryPalette();
           break;
         case 'analogous':
-          state.colorPalette = generateAnalogousPalette();
+          this.colorPalette = this.generateAnalogousPalette();
           break;
         case 'triadic':
-          state.colorPalette = generateTriadicPalette();
+          this.colorPalette = this.generateTriadicPalette();
           break;
         default:
-          // Replace 'baseColor' with a valid color variable or value
-          state.colorPalette = chroma.scale(['baseColor', 'white']).mode('lab').colors(state.paletteSize);
+          // this.colorPalette = Array.from({ length: this.numberOfColors }, this.generateRandomColor);
+          this.colorPalette = chroma.scale([baseColor, 'white']).mode('lab').colors(this.paletteSize);
+
       }
-    };
-
-    const generateComplementaryPalette = () => {
-      const baseColor = chroma(generateRandomColor());
+    },
+    generateComplementaryPalette() {
+      const baseColor = chroma(this.generateRandomColor());
       const complementaryColor = baseColor.saturate(2);
-      return chroma.scale([baseColor, complementaryColor]).colors(state.numberOfColors);
-    };
-
-    const generateAnalogousPalette = () => {
-      const baseColor = chroma(generateRandomColor());
+      return chroma.scale([baseColor, complementaryColor]).colors(this.numberOfColors);
+    },
+    generateAnalogousPalette() {
+      const baseColor = chroma(this.generateRandomColor());
       const analogousColor1 = baseColor.saturate(2);
       const analogousColor2 = baseColor.saturate(-2);
-      return chroma.scale([baseColor, analogousColor1, analogousColor2]).colors(state.numberOfColors);
-    };
-
-    const generateTriadicPalette = () => {
-      const baseColor = chroma(generateRandomColor());
+      return chroma.scale([baseColor, analogousColor1, analogousColor2]).colors(this.numberOfColors);
+    },
+    generateTriadicPalette() {
+      const baseColor = chroma(this.generateRandomColor());
       const triadicColor1 = baseColor.saturate(2).rotate(120);
       const triadicColor2 = baseColor.saturate(-2).rotate(-120);
-      return chroma.scale([baseColor, triadicColor1, triadicColor2]).colors(state.numberOfColors);
-    };
-
-    const copyToClipboard = () => {
-      const colorsText = state.colorPalette.join(', ');
+      return chroma.scale([baseColor, triadicColor1, triadicColor2]).colors(this.numberOfColors);
+    },
+    copyToClipboard() {
+      const colorsText = this.colorPalette.join(', ');
       const textarea = document.createElement('textarea');
       textarea.value = colorsText;
       document.body.appendChild(textarea);
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-    };
-
-    const randomizeColorPalette = () => {
-      state.colorPalette = Array.from({ length: state.numberOfColors }, generateRandomColor);
-    };
-
-    const resetSettings = () => {
-      state.numberOfColors = 5;
-      state.colorConstraint = null;
-      state.saturation = 50;
-      state.colorRange = '0-360';
-      state.darkMode = false;
-      state.selectedPattern = 'random';
-      generateColorPalette();
-    };
-
-    const exportToImage = () => {
-      // Access the DOM element using the ref
-      const paletteElement = colorPaletteElement.value;
+    },
+    randomizeColorPalette() {
+      this.colorPalette = Array.from({ length: this.numberOfColors }, this.generateRandomColor);
+    },
+    resetSettings() {
+      this.numberOfColors = 5;
+      this.colorConstraint = null;
+      this.saturation = 50;
+      this.colorRange = '0-360';
+      this.darkMode = false;
+      this.selectedPattern = 'random';
+      this.generateColorPalette();
+    },
+    exportToImage() {
+      const paletteElement = this.$refs.colorPaletteElement;
 
       if (!paletteElement) {
         console.error('Color palette element not found.');
@@ -207,30 +200,9 @@ export default {
         .catch((error) => {
           console.error('Error exporting to image:', error);
         });
-    };
+    },
 
-    watchEffect(() => {
-      containerClass.value = {
-        'color-palette-generator': true,
-        'dark-mode': state.darkMode,
-      };
-    });
 
-    return {
-      state,
-      containerClass,
-      updateHarmonyInformation,
-      generateColorPalette,
-      colorPaletteElement,
-      generateRandomColor,
-      generateComplementaryPalette,
-      generateAnalogousPalette,
-      generateTriadicPalette,
-      copyToClipboard,
-      randomizeColorPalette,
-      resetSettings,
-      exportToImage,
-    };
   },
 };
 </script>
