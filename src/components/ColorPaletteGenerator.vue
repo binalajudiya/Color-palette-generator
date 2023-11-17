@@ -5,17 +5,17 @@
     <div class="options">
       <div class="option">
         <label for="numberOfColors">Number of Colors:</label>
-        <input v-model="state.numberOfColors" type="number" min="1" id="numberOfColors" />
+        <input v-model="numberOfColors" type="number" min="1" id="numberOfColors" />
       </div>
 
       <div class="option">
         <label for="saturation">Saturation:</label>
-        <input v-model="state.saturation" type="range" min="0" max="100" id="saturation" />
+        <input v-model="saturation" type="range" min="0" max="100" id="saturation" />
       </div>
 
       <div class="option">
         <label for="colorRange">Color Range:</label>
-        <input v-model="state.colorRange" type="text" id="colorRange" />
+        <input v-model="colorRange" type="text" id="colorRange" />
       </div>
 
       <div class="option">
@@ -80,10 +80,7 @@ export default {
   setup() {
     const state = reactive({
       colorPalette: [],
-      numberOfColors: 5,
       colorConstraint: null,
-      saturation: 50,
-      colorRange: '0-360',
       darkMode: false,
       selectedPattern: 'random',
       harmonyInformation: null,
@@ -91,6 +88,9 @@ export default {
     });
 
     const colorPaletteElement = ref(null);
+    const saturation = ref(50);
+    const numberOfColors = ref(5);
+    const colorRange = ref('0-360');
 
     const containerClass = ref({
       'color-palette-generator': true,
@@ -120,7 +120,7 @@ export default {
     const generateColorPalette = () => {
       switch (state.selectedPattern) {
         case 'random':
-          state.colorPalette = Array.from({ length: state.numberOfColors }, generateRandomColor);
+          state.colorPalette = Array.from({ length: numberOfColors.value }, generateRandomColor);
           break;
         case 'complementary':
           state.colorPalette = generateComplementaryPalette();
@@ -133,28 +133,29 @@ export default {
           break;
         default:
           // Replace 'baseColor' with a valid color variable or value
-          state.colorPalette = chroma.scale(['baseColor', 'white']).mode('lab').colors(state.paletteSize);
+          state.colorPalette = chroma.scale([baseColor, colorRange.value]).mode('lab').colors(state.paletteSize);
+
       }
     };
 
     const generateComplementaryPalette = () => {
       const baseColor = chroma(generateRandomColor());
       const complementaryColor = baseColor.saturate(2);
-      return chroma.scale([baseColor, complementaryColor]).colors(state.numberOfColors);
+      return chroma.scale([baseColor, complementaryColor]).colors(numberOfColors.value);
     };
 
     const generateAnalogousPalette = () => {
       const baseColor = chroma(generateRandomColor());
       const analogousColor1 = baseColor.saturate(2);
       const analogousColor2 = baseColor.saturate(-2);
-      return chroma.scale([baseColor, analogousColor1, analogousColor2]).colors(state.numberOfColors);
+      return chroma.scale([baseColor, analogousColor1, analogousColor2]).colors(numberOfColors.value);
     };
 
     const generateTriadicPalette = () => {
       const baseColor = chroma(generateRandomColor());
       const triadicColor1 = baseColor.saturate(2).rotate(120);
       const triadicColor2 = baseColor.saturate(-2).rotate(-120);
-      return chroma.scale([baseColor, triadicColor1, triadicColor2]).colors(state.numberOfColors);
+      return chroma.scale([baseColor, triadicColor1, triadicColor2]).colors(numberOfColors.value);
     };
 
     const copyToClipboard = () => {
@@ -168,14 +169,14 @@ export default {
     };
 
     const randomizeColorPalette = () => {
-      state.colorPalette = Array.from({ length: state.numberOfColors }, generateRandomColor);
+      state.colorPalette = Array.from({ length: numberOfColors.value }, generateRandomColor);
     };
 
     const resetSettings = () => {
-      state.numberOfColors = 5;
+      numberOfColors.value = 5;
       state.colorConstraint = null;
-      state.saturation = 50;
-      state.colorRange = '0-360';
+      saturation.value = null;
+      colorRange.value = '0-360';
       state.darkMode = false;
       state.selectedPattern = 'random';
       generateColorPalette();
@@ -230,6 +231,9 @@ export default {
       randomizeColorPalette,
       resetSettings,
       exportToImage,
+      saturation,
+      numberOfColors,
+      colorRange
     };
   },
 };
